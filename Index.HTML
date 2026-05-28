@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>ระบบจัดการการมาสาย</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { 
+      --primary: #4361ee; 
+      --primary-hover: #3a53d0;
+      --success: #10b981; 
+      --warning: #f59e0b; 
+      --danger: #ef4444; 
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+    }
+    
+    * { box-sizing: border-box; }
+    body { 
+      font-family: 'Sarabun', sans-serif; 
+      margin: 0; padding: 20px 15px; 
+      background-color: var(--bg); 
+      color: var(--text-main);
+      display: flex; justify-content: center; align-items: flex-start; min-height: 100vh;
+    }
+    
+    .container { 
+      width: 100%; max-width: 480px; 
+      background: var(--surface); 
+      padding: 35px 25px; 
+      border-radius: 28px; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.06); 
+      height: fit-content;
+      position: relative;
+      overflow: hidden;
+    }
+
+    h3 { margin-top: 0; color: var(--text-main); text-align: center; font-weight: 700; margin-bottom: 25px; font-size: 22px;}
+    h3 span { color: var(--primary); }
+
+    .page-in { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUp { 
+      from { opacity: 0; transform: translateY(15px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+
+    #userProfile { 
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 1px solid #bfdbfe; 
+      padding: 16px; border-radius: 20px; font-size: 15px; 
+      margin-bottom: 25px; display: none; line-height: 1.6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+      position: relative;
+    }
+    .role-badge {
+      position: absolute; top: 16px; right: 16px;
+      background: var(--primary); color: white;
+      font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600;
+    }
+
+    .input-group { position: relative; margin-bottom: 15px; }
+    input, select { 
+      width: 100%; padding: 15px 18px; 
+      border: 1.5px solid #e2e8f0; border-radius: 16px; 
+      font-size: 15px; font-family: 'Sarabun', sans-serif;
+      transition: all 0.3s ease; background: #f8fafc; color: var(--text-main);
+    }
+    input:focus, select:focus { 
+      border-color: var(--primary); outline: none; background: #fff;
+      box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+    }
+    .toggle-pwd {
+      position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; opacity: 0.5; user-select: none; font-size: 18px; transition: opacity 0.2s;
+    }
+    .toggle-pwd:hover { opacity: 1; }
+
+    button { 
+      width: 100%; padding: 16px; margin: 8px 0; 
+      border: none; border-radius: 16px; 
+      cursor: pointer; font-weight: 600; font-size: 16px; 
+      font-family: 'Sarabun', sans-serif;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+      display: flex; justify-content: center; align-items: center; gap: 10px;
+    }
+    button:active { transform: scale(0.96); }
+    .btn-main { background: var(--primary); color: white; box-shadow: 0 6px 16px rgba(67, 97, 238, 0.25); }
+    .btn-main:hover { background: var(--primary-hover); transform: translateY(-2px); }
+    .btn-sub { background: #f1f5f9; color: #475569; font-weight: 500; }
+    .btn-sub:hover { background: #e2e8f0; }
+    .btn-green { background: var(--success); color: white; box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25); }
+    .btn-orange { background: var(--warning); color: white; box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25); }
+    .btn-danger { background: var(--danger); color: white; box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25); }
+
+    .upload-area {
+      padding: 30px 20px; border: 2px dashed #cbd5e1; border-radius: 20px; 
+      margin-bottom: 20px; background: #f8fafc; text-align: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .upload-area:hover { border-color: var(--primary); background: #eff6ff; }
+    .upload-area img { max-width: 100%; max-height: 200px; border-radius: 12px; margin-top: 15px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
+
+    .table-wrapper { 
+      width: 100%; overflow-x: auto; margin-top: 15px; 
+      border: 1px solid #e2e8f0; border-radius: 16px; 
+      background: white;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 450px; }
+    th { background: #f8fafc; color: var(--text-muted); font-weight: 600; font-size: 13px; padding: 15px 12px; white-space: nowrap;}
+    th, td { padding: 15px 12px; font-size: 14px; border-bottom: 1px solid #f1f5f9; text-align: center; }
+    td.name-col { text-align: left; font-weight: 500; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background-color: #f8fafc; }
+
+    #loader { 
+      position: fixed; top:0; left:0; width:100%; height:100%; 
+      background: rgba(255,255,255,0.85); backdrop-filter: blur(8px);
+      display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; 
+    }
+    .spinner { 
+      width: 50px; height: 50px; 
+      border: 4px solid #e2e8f0; border-top: 4px solid var(--primary); 
+      border-radius: 50%; animation: spin 0.8s linear infinite; 
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    #loaderMsg { margin-top: 20px; font-weight: 600; color: var(--primary); font-size: 16px; }
+
+    #toast {
+      visibility: hidden; min-width: 280px; background-color: #333; color: #fff;
+      text-align: center; border-radius: 14px; padding: 16px; position: fixed;
+      z-index: 10000; left: 50%; transform: translateX(-50%); bottom: -50px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px;
+    }
+    #toast.show { visibility: visible; opacity: 1; bottom: 40px; }
+    #toast.success { background-color: var(--success); }
+    #toast.error { background-color: var(--danger); }
+
+    .inbox-card { 
+      text-align: left; background: white; padding: 20px; 
+      border-radius: 20px; margin-bottom: 15px; 
+      border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      transition: transform 0.2s; 
+    }
+    .inbox-card:hover { transform: translateY(-2px); border-color: #cbd5e1; }
+    .hidden { display: none !important; }
+
+    .credit-box-wrapper { margin-top: 35px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; width: 100%; }
+    .credit-box { animation: floatCredit 4s ease-in-out infinite; display: flex; flex-direction: column; align-items: center; padding: 24px; background-color: #ffffff; border-radius: 16px; border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); min-width: 300px; }
+    .credit-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .credit-line { width: 32px; height: 1px; background-color: #cbd5e1; }
+    .credit-title { font-size: 10px; font-weight: 700; letter-spacing: 0.25em; color: #94a3b8; }
+    .credit-content { display: flex; flex-direction: column; gap: 12px; text-align: center; width: 100%; }
+    .credit-text-main { font-size: 11px; font-weight: 500; color: #64748b; letter-spacing: 0.1em; }
+    .credit-name-diya { font-weight: 700; font-size: 13px; margin-left: 4px; }
+    .credit-name-day { font-weight: 700; color: #1e293b; margin-left: 4px; }
+    .credit-quote-new { font-size: 11px; color: #94a3b8; font-weight: 400; margin-top: 8px; line-height: 1.5; font-style: italic; }
+    .credit-divider { margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
+    .credit-support-title { font-size: 9px; font-weight: 700; color: rgba(245, 158, 11, 0.8); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 4px; }
+    .credit-support-name { font-size: 11px; font-weight: 700; color: #1e293b; letter-spacing: 0.1em; }
+    @keyframes floatCredit { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes shimmerText { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+    .text-shimmer { background: linear-gradient(90deg, #0f172a 0%, #64748b 25%, #cbd5e1 50%, #64748b 75%, #0f172a 100%); background-size: 200% auto; color: transparent; -webkit-background-clip: text; background-clip: text; animation: shimmerText 4s linear infinite; }
+  </style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="spinner"></div>
+  <p id="loaderMsg">กำลังโหลดข้อมูล...</p>
+</div>
+
+<div id="toast">Message</div>
+
+<div class="container page-in">
+  <div id="userProfile">
+    <div class="role-badge" id="profRole">นักเรียน</div>
+    <div style="font-size: 13px; color: #3b82f6; font-weight: 600; margin-bottom: 4px;">ข้อมูลผู้ใช้งานระบบ</div>
+    <b style="font-size: 18px; color: #1e3a8a;">👤 <span id="profName"></span></b><br>
+    <div style="color:#64748b; font-size:14px; margin-top: 6px;">
+      🏫 ชั้น: <span id="profLevel" style="color:#1e293b; font-weight:500;"></span> | 
+      🆔 รหัส: <span id="profId" style="color:#1e293b; font-weight:500;"></span>
+    </div>
+  </div>
+
+  <div id="loginPage" class="page-in">
+    <h3>เข้าสู่ระบบ<span>การมาสาย</span></h3>
+    <div class="input-group">
+      <input type="text" id="loginName" placeholder="ชื่อ-นามสกุล (ไม่ต้องมีคำนำหน้า)">
+    </div>
+    <div class="input-group">
+      <input type="tel" id="loginId" placeholder="เลขประจำตัวนักเรียน">
+    </div>
+    <button class="btn-main" onclick="handleLogin()" style="margin-top: 10px;">🚀 เข้าสู่ระบบ</button>
+    <div class="credit-box-wrapper">
+      <div class="credit-box">
+        <div class="credit-header">
+          <span class="credit-line"></span>
+          <span class="credit-title">CREDITS</span>
+          <span class="credit-line"></span>
+        </div>
+        <div class="credit-content">
+          <div class="credit-text-main">SYSTEM ENGINEERED BY <span class="credit-name-diya text-shimmer">DIYA</span></div>
+          <div class="credit-text-main">CODE SUPPORT BY <span class="credit-name-day">Day W</span>
+            <div class="credit-quote-new">"I only opened the door.<br>The rest belongs to you."</div>
+          </div>
+          <div class="credit-divider">
+            <div class="credit-support-title">System Development Support</div>
+            <div class="credit-support-name">SPA DEVELOPMENT DIVISION</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pinPage" class="hidden page-in">
+    <h3>🔐 ยืนยันสิทธิ์<span>สภานักเรียน</span></h3>
+    <div class="input-group">
+      <input type="password" id="pinInput" placeholder="รหัส PIN 4 หลัก">
+      <span class="toggle-pwd" onclick="togglePin('pinInput', this)">👁️</span>
+    </div>
+    <button class="btn-main" onclick="verifyPin()">ยืนยันรหัส</button>
+    <button class="btn-sub" onclick="logout()">ย้อนกลับ</button>
+  </div>
+
+  <div id="studentMenu" class="hidden page-in">
+    <h3>เมนู<span>นักเรียน</span></h3>
+    <button class="btn-main" onclick="showLateList()">🔎 ตรวจสอบสถานะการมาสาย</button>
+    <button class="btn-orange" onclick="changePage('submitPage')">📤 ส่งรูปหลักฐานแก้สาย</button>
+    <button class="btn-danger" onclick="logout()" style="margin-top: 25px;">🚪 ออกจากระบบ</button>
+  </div>
+
+  <div id="councilMenu" class="hidden page-in">
+    <h3>เมนู<span>สภานักเรียน</span></h3>
+    <button class="btn-green" onclick="changePage('recordPage')">📝 บันทึกรายชื่อคนมาสาย</button>
+    <button class="btn-orange" onclick="showProcessPage()">🛠️ ตรวจสอบงานแก้สาย</button>
+    <button class="btn-main" onclick="showLateList()">🔎 ดูข้อมูลนักเรียนที่ติดสายทั้งหมด</button>
+    <button class="btn-danger" onclick="logout()" style="margin-top: 25px;">🚪 ออกจากระบบ</button>
+  </div>
+
+  <div id="recordPage" class="hidden page-in">
+    <h3>บันทึก<span>คนมาสาย</span></h3>
+    <div class="input-group">
+      <select id="genderInput">
+        <option value="ชาย">👦 นักเรียนชาย</option>
+        <option value="หญิง">👧 นักเรียนหญิง</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <input list="studentDataList" id="recName" placeholder="พิมพ์ค้นหาชื่อนักเรียน..." oninput="autoFillRecord()">
+    </div>
+    <div class="input-group">
+      <input type="text" id="recLevel" placeholder="ระดับชั้น (ดึงข้อมูลอัตโนมัติ)" readonly style="background:#e2e8f0; cursor: not-allowed;">
+    </div>
+    <button class="btn-green" onclick="submitRecord()">💾 บันทึกเข้าระบบ</button>
+    <button class="btn-sub" onclick="goBack()">ย้อนกลับ</button>
+  </div>
+
+  <div id="submitPage" class="hidden page-in">
+    <h3>ส่งหลักฐาน<span>การแก้สาย</span></h3>
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+      <div id="fileLabel" style="color: var(--primary); font-weight: 600; font-size: 15px;">📸 แตะเพื่อเลือกรูปภาพหลักฐาน</div>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">รองรับไฟล์ภาพ (JPG, PNG)</div>
+      <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="previewImage(event)">
+      <img id="imagePreview" alt="ภาพตัวอย่าง"/>
+    </div>
+    <button class="btn-green" onclick="submitWork()">☁️ อัปโหลดรูปภาพ</button>
+    <button class="btn-sub" onclick="goBack()">ยกเลิก</button>
+  </div>
+
+  <div id="lateListPage" class="hidden page-in">
+    <h3>รายชื่อ<span>คนติดสาย</span></h3>
+    <div class="input-group">
+      <input type="text" id="searchLate" placeholder="🔍 ค้นหาชื่อ..." onkeyup="filterLateTable()">
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead id="lateTableHead"></thead>
+        <tbody id="lateTableBody"></tbody>
+      </table>
+    </div>
+    <button class="btn-sub" onclick="goBack()" style="margin-top: 20px;">ย้อนกลับ</button>
+  </div>
+
+  <div id="processPage" class="hidden page-in">
+    <h3>รายการ<span>รอตรวจสอบ</span></h3>
+    <div id="processList"></div>
+    <button class="btn-sub" onclick="goBack()">ย้อนกลับ</button>
+  </div>
+</div>
+
+<datalist id="studentDataList"></datalist>
+
+<script>
+  // วาง URL ของ Web App จาก Google Apps Script ที่ลงท้ายด้วย /exec ตรงนี้ครับ
+  const API_URL = "ใส่ลิงก์_WEB_APP_URL_ของคุณที่นี่"; 
+
+  let userData = {};
+  let allStudents = [];
+  let fullLateList = [];
+
+  // ฟังก์ชันส่วนกลางสำหรับการดึงข้อมูล API ข้ามเซิร์ฟเวอร์แบบ POST
+  async function callAPI(action, data = {}) {
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ action, ...data })
+      });
+      return await response.json();
+    } catch (error) {
+      console.error("API Error:", error);
+      showToast("❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์", "error");
+      hideLoading();
+      throw error;
+    }
+  }
+
+  function showToast(message, type = 'success') {
+    const toast = document.getElementById("toast");
+    toast.className = type + " show";
+    toast.innerHTML = message;
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3500);
+  }
+
+  function showLoading(msg) { 
+    document.getElementById('loader').style.display = 'flex'; 
+    document.getElementById('loaderMsg').innerText = msg; 
+  }
+  function hideLoading() { 
+    document.getElementById('loader').style.display = 'none'; 
+  }
+
+  function togglePin(inputId, iconEl) {
+    const el = document.getElementById(inputId);
+    if (el.type === "password") { el.type = "text"; iconEl.innerText = "🙈"; } 
+    else { el.type = "password"; iconEl.innerText = "👁️"; }
+  }
+
+  function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('imagePreview').src = e.target.result;
+        document.getElementById('imagePreview').style.display = 'block';
+        document.getElementById('fileLabel').innerHTML = "✅ เลือกรูปภาพแล้ว<br><span style='font-size:12px; color:#64748b;'>(แตะเพื่อเปลี่ยนรูป)</span>";
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function changePage(id) {
+    const pages = ['loginPage', 'pinPage', 'studentMenu', 'councilMenu', 'recordPage', 'submitPage', 'lateListPage', 'processPage'];
+    pages.forEach(p => {
+      const el = document.getElementById(p);
+      el.classList.add('hidden');
+      el.classList.remove('page-in'); 
+    });
+    
+    const target = document.getElementById(id);
+    target.classList.remove('hidden');
+    void target.offsetWidth;
+    target.classList.add('page-in');
+    
+    if(id === 'recordPage') { document.getElementById('recName').value = ""; document.getElementById('recLevel').value = ""; }
+    if(id === 'lateListPage') { document.getElementById('searchLate').value = ""; }
+    if(id === 'submitPage') { document.getElementById('fileInput').value = ""; document.getElementById('imagePreview').style.display = "none"; document.getElementById('fileLabel').innerHTML = "📸 แตะเพื่อเลือกรูปภาพหลักฐาน"; }
+  }
+
+  function goBack() { (userData.role === 'council') ? changePage('councilMenu') : changePage('studentMenu'); }
+  function logout() { userData = {}; document.getElementById('userProfile').style.display = 'none'; document.getElementById('loginName').value = ""; document.getElementById('loginId').value = ""; document.getElementById('pinInput').value = ""; changePage('loginPage'); }
+
+  function handleLogin() {
+    const name = document.getElementById('loginName').value.trim();
+    const id = document.getElementById('loginId').value.trim();
+    if(!name || !id) return showToast("⚠️ กรุณากรอกข้อมูลให้ครบถ้วน", "error");
+    
+    showLoading("กำลังตรวจสอบข้อมูล...");
+    callAPI("checkLogin", { name, id }).then(res => {
+      hideLoading();
+      if(res) {
+        userData = res;
+        document.getElementById('profName').innerText = res.name;
+        document.getElementById('profId').innerText = res.id;
+        document.getElementById('profLevel').innerText = res.level;
+        document.getElementById('profRole').innerText = (res.role === 'council') ? "กรรมการสภาฯ" : "นักเรียน";
+        document.getElementById('profRole').style.background = (res.role === 'council') ? "var(--warning)" : "var(--primary)";
+        document.getElementById('userProfile').style.display = 'block';
+        
+        if(res.role === 'council') changePage('pinPage'); 
+        else changePage('studentMenu');
+        
+        loadStudentData(); 
+      } else { showToast("❌ ไม่พบข้อมูล กรุณาตรวจสอบชื่อและรหัสอีกครั้ง", "error"); }
+    });
+  }
+
+  function verifyPin() {
+    if(document.getElementById('pinInput').value === "1234") { document.getElementById('pinInput').value = ""; changePage('councilMenu'); } 
+    else { showToast("❌ รหัส PIN ไม่ถูกต้อง", "error"); }
+  }
+
+  function loadStudentData() {
+    callAPI("getStudentData").then(data => {
+      allStudents = data;
+      const df = document.createDocumentFragment();
+      data.forEach(r => { 
+        if(r[0]) { const opt = document.createElement('option'); opt.value = r[0]; df.appendChild(opt); }
+      });
+      const dataList = document.getElementById('studentDataList');
+      dataList.innerHTML = '';
+      dataList.appendChild(df);
+    });
+  }
+
+  function autoFillRecord() {
+    const name = document.getElementById('recName').value;
+    const match = allStudents.find(s => s[0] === name);
+    document.getElementById('recLevel').value = match ? match[2] : "";
+  }
+
+  function submitRecord() {
+    const g = document.getElementById('genderInput').value;
+    const n = document.getElementById('recName').value;
+    const l = document.getElementById('recLevel').value;
+    if(!n || !l) return showToast("⚠️ กรุณาเลือกชื่อนักเรียนจากรายการค้นหา", "error");
+    
+    showLoading("กำลังบันทึกข้อมูล...");
+    callAPI("recordLate", { gender: g, name: n, level: l, recorderName: userData.name }).then(res => {
+      hideLoading(); 
+      let [status, msg] = res.split('|');
+      showToast(msg, status);
+      document.getElementById('recName').value = "";
+      document.getElementById('recLevel').value = "";
+    });
+  }
+
+  function showLateList() {
+    showLoading("กำลังโหลดตาราง...");
+    callAPI("getCombinedLateList").then(data => {
+      hideLoading(); 
+      fullLateList = data;
+      renderTable(data); 
+      changePage('lateListPage');
+    });
+  }
+
+  function renderTable(data) {
+    let isCouncil = (userData.role === 'council');
+    let headHtml = `<tr><th class="name-col">ชื่อ-สกุล</th>${isCouncil ? '<th>ชั้น</th>' : ''}<th>สาย</th><th>แก้</th><th>ค้าง</th></tr>`;
+    document.getElementById('lateTableHead').innerHTML = headHtml;
+
+    let html = data.map(r => {
+      let left = Number(r[2]) - Number(r[3]);
+      return `<tr>
+        <td class="name-col">${r[0]}</td>
+        ${isCouncil ? `<td>${r[1]}</td>` : ''}
+        <td>${r[2]}</td>
+        <td style="color:var(--success); font-weight:600;">${r[3]}</td>
+        <td style="color:var(--danger); font-weight:700; font-size:16px;">${left}</td>
+      </tr>`;
+    }).join("");
+    
+    let colCount = isCouncil ? 5 : 4;
+    document.getElementById('lateTableBody').innerHTML = html || `<tr><td colspan='${colCount}' style="padding:40px; color:var(--text-muted);">🎉 ไม่มีนักเรียนที่ค้างงานแก้สาย</td></tr>`;
+  }
+
+  function filterLateTable() {
+    const q = document.getElementById('searchLate').value.toLowerCase();
+    const filtered = fullLateList.filter(r => r[0].toLowerCase().includes(q));
+    renderTable(filtered);
+  }
+
+  function submitWork() {
+    const fileEl = document.getElementById('fileInput');
+    if(!fileEl.files[0]) return showToast("⚠️ กรุณาเลือกรูปภาพก่อนส่ง", "error");
+    
+    showLoading("กำลังบีบอัดและอัปโหลดรูปภาพ...");
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const scale = Math.min(800 / img.width, 800 / img.height);
+        canvas.width = img.width * scale; canvas.height = img.height * scale;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        const compressed = canvas.toDataURL('image/jpeg', 0.6); 
+        
+        callAPI("uploadAndSubmit", { name: userData.name, id: userData.id, fileData: compressed, fileName: "Fix_" + userData.name + ".jpg" }).then(res => {
+          hideLoading(); 
+          let [status, msg] = res.split('|');
+          showToast(msg, status);
+          if(status === 'success') { goBack(); }
+        });
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(fileEl.files[0]);
+  }
+
+  function showProcessPage() {
+    showLoading("โหลดรายการที่รอตรวจ...");
+    callAPI("getPendingCorrections").then(data => {
+      hideLoading();
+      if (!data || data.length === 0) {
+         document.getElementById('processList').innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-muted); border: 2px dashed #cbd5e1; border-radius: 20px; background: #f8fafc;">✨ ยอดเยี่ยม! ไม่มีงานค้างตรวจ</div>`;
+         changePage('processPage');
+         return;
+      }
+
+      let html = data.map(item => {
+        let fileIdMatch = item.url.match(/[-\w]{25,}/);
+        let mediaHtml = fileIdMatch ? 
+          `<iframe src="https://drive.google.com/file/d/${fileIdMatch[0]}/preview" width="100%" height="220" style="border:none; border-radius:14px; margin: 15px 0; background: #f1f5f9;"></iframe>` : 
+          `<a href="${item.url}" target="_blank" style="color:var(--primary); font-weight:600; display:block; margin: 15px 0;">🔗 เปิดดูรูปหลักฐาน</a>`;
+        
+        return `<div class="inbox-card">
+          <div style="font-size:18px; color:var(--primary); font-weight:700;">${item.name}</div>
+          <div style="color:var(--text-muted); font-size:14px; margin-top:2px;">รหัส: ${item.id}</div>
+          ${mediaHtml}
+          <div style="display:flex; gap:12px; margin-top:15px;">
+            <button class="btn-green" style="padding:12px; margin:0;" onclick="decide('${item.row}', 'ผ่าน', '${item.name}')">✅ อนุมัติผ่าน</button>
+            <button class="btn-danger" style="padding:12px; margin:0;" onclick="decide('${item.row}', 'ไม่ผ่าน', '${item.name}')">❌ ไม่อนุมัติ</button>
+          </div>
+        </div>`;
+      }).join("");
+      
+      document.getElementById('processList').innerHTML = html;
+      changePage('processPage');
+    });
+  }
+
+  function decide(row, status, name) {
+    if(confirm(`ยืนยันให้ "${status}" สำหรับ ${name} ใช่หรือไม่?`)) {
+      showLoading("กำลังบันทึกข้อมูล...");
+      callAPI("approveCorrection", { row, status, name, reviewerName: userData.name }).then(res => {
+        hideLoading(); 
+        let [s, msg] = res.split('|');
+        showToast(msg, s);
+        showProcessPage();
+      });
+    }
+  }
+
+  // --- ทะเบียนตรวจจับบริการ PWA Service Worker ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('PWA Service Worker พร้อมใช้งานแล้ว', reg))
+        .catch(err => console.error('การลงทะเบียน Service Worker ล้มเหลว', err));
+    });
+  }
+</script>
+</body>
+</html>
