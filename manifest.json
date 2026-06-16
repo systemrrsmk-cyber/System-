@@ -1,6 +1,6 @@
 {
   "name": "ระบบจัดการการมาสาย",
-  "short_name": "จัดการมาสาย",
+  "short_name": "LateTrack",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
@@ -8,12 +8,12 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/1067/1067353.png",
+      "src": "https://raw.githubusercontent.com/systemrrsmk-cyber/my-icons/main/.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/1067/1067353.png",
+      "src": "https://raw.githubusercontent.com/systemrrsmk-cyber/my-icons/main/.png",
       "sizes": "512x512",
       "type": "image/png"
     }
