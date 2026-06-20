@@ -347,7 +347,7 @@
     <span class="ai-chat-close" onclick="toggleAIChat()">✕</span>
   </div>
   <div class="ai-chat-body" id="aiChatBody">
-    <div class="ai-msg bot">สวัสดีครับ! ผมคือ AI ผู้ช่วยเหลือประจำระบบจัดการการมาสาย มีข้อสงสัยหรือติดปัญหาการใช้งานตรงไหน ถามผมได้เลยนะ! 😊</div>
+    <div class="ai-msg bot">สวัสดีครับ! ผมคือ AI ผู้ช่วยเหลือประจำแอป LateTrask มีข้อสงสัยหรือติดปัญหาการใช้งานตรงไหน ถามผมได้เลยนะ! 😊</div>
   </div>
   <div class="ai-chat-input-area">
     <input type="text" id="aiChatInput" placeholder="พิมพ์ข้อความคำถามที่นี่..." onkeypress="if(event.key === 'Enter') sendAIMessage()">
@@ -516,7 +516,7 @@
         else changePage('studentMenu');
         
         loadStudentData(); 
-      } else { showToast("❌ ไม่พบข้อมูล กรุณาตรวจสอบชื่อและรหัสอีกครั้ง", "error"); }
+      } else { showToast("❌ ไม่พบข้อมูล กรุณาตรวจสอบชื่อ ว่าเว้นวรรค 2 ครั้งไหม และตรวจสอบรหัสอีกครั้ง", "error"); }
     });
   }
 
